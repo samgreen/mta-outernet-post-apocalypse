@@ -1,0 +1,8 @@
+<def name="Capture the Orb">
+    <element name="spawnpoint" friendlyname="Spawnpoint">
+        <object editorOnly="true" model="1254" posZ="1" />
+        <data name="position" type="coord3d" default="0,0,0" />
+        <data name="rotation" type="coord3d" default="0,0,0" />
+        <data name="skin" type="skinID" default="0" />
+    </element>
+</def>
