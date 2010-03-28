@@ -1,3 +1,5 @@
+local allWindows
+
 local windowGunSkills
 local buttonSmallArmsSkill
 local buttonSubMachinegun
@@ -5,6 +7,7 @@ local buttonSpecialtySkill
 local buttonShotgunSkill
 local buttonRifleSkill
 
+-- This event is triggered when this file has completed downloading.
 addEventHandler("onClientResourceStart", getResourceRootElement(getThisResource()), 
 	function ()
 		-- create the gun skills
@@ -18,11 +21,11 @@ addEventHandler("onClientResourceStart", getResourceRootElement(getThisResource(
 )
 
 -- This function creates an inventory window and populates it from data provided
--- in the parameter inventoryTable. The inventoryTable must contain the keys:
+-- in the parameter inventoryTable. The inventoryTable must contain any number of rows
+-- with the following keys:
 -- 		Quantity
 --		Name
 --		Description
---
 function createInventoryWindow(inventoryTable)
 	-- Create our window
 	windowInventory = guiCreateWindow(.1,.25,.4,.5,"Inventory",true)
@@ -39,17 +42,21 @@ function createInventoryWindow(inventoryTable)
         guiGridListSetItemText ( itemGridList, row, 3, value.Description, false, false )
     end
 	
-	showCursor(true)
+	-- Add the inventory window to our table containing all windows
+	table.insert(allWindows, windowInventory)
+	
+	-- Hide the window until the user requests it.
+	guiSetVisible(windowInventory, false)
 end
 addEvent("createInventory",true)
 addEventHandler("createInventory",getRootElement(),createInventoryWindow)  
 
 -- This function creates an item browser window and populates it from data provided
--- in the parameter itemTable. The itemTable must contain the keys:
+-- in the parameter itemTable. The itemTable must contain any number of rows
+-- with the following keys:
 -- 		ItemID
 --		Name
 --		Description
---
 function createItemBrowserWindow(itemTable)
 	-- Create our window
 	windowItemBrowser = guiCreateWindow(.1,.25,.4,.5,"Item Browser",true)
@@ -66,7 +73,11 @@ function createItemBrowserWindow(itemTable)
         guiGridListSetItemText ( itemGridList, row, 3, value.Description, false, false )
     end
 	
-	showCursor(true)
+	-- Add the item browser window to our table containing all windows
+	table.insert(allWindows, windowInventory)
+	
+	-- Hide the window until the user requests it.
+	guiSetVisible(windowItemBrowser, false)
 end
 addEvent("createItemBrowser",true)
 addEventHandler("createItemBrowser",getRootElement(),createItemBrowserWindow)
@@ -86,24 +97,32 @@ function createGunSkillsWindow()
 	addEventHandler("onClientGUIClick", buttonRifleSkill, processRifleSkill, false)
 	addEventHandler("onClientGUIClick", buttonSpecialtySkill, processSpecialtySkill, false)
 	
+	-- Add the gun skills window to our table containing all windows
+	table.insert(allWindows, windowGunSkills)
+	
 	-- Hide the window until the user requests it.
 	guiSetVisible(windowGunSkills, false)	
 end
 addEvent("createGunSkills",true)
 addEventHandler("createGunSkills",getRootElement(),createGunSkillsWindow)
 
-function processSmallArmsSkill(button)
-	-- Check their skill points, and cancel the event if they have 0
+function closeAndResetGUI()
+	-- Hide all windows	
+	for key, window in pairs(allWindows) do
+		guiSetVisible(window, false) 
+	end
 	
-	-- TODO: Add one skill point to their small arms skill
-	outputChatBox("You increased your small arms skill!")
-	
-	guiSetVisible(windowGunSkills, false)
 	showCursor(false)
 	guiSetInputEnabled(false)
 end
 
-function closeAndResetGUI()
+function processSmallArmsSkill(button)
+	-- Check their skill points, and cancel the event if they have 0
+	
+	-- TODO: Add one skill point to their small arms skill
+	-- 200 points total
+	outputChatBox("You increased your small arms skill!")
+	
 	guiSetVisible(windowGunSkills, false)
 	showCursor(false)
 	guiSetInputEnabled(false)
@@ -113,6 +132,7 @@ function processSubMachineGunSkill(button)
 	-- Check their skill points, and cancel the event if they have 0
 	
 	-- TODO: Add one skill point to their small arms skill
+	-- 250 points total
 	outputChatBox("You increased your sub machinegun skill!")
 end
 
@@ -120,6 +140,7 @@ function processShotgunSkill(button)
 	-- Check their skill points, and cancel the event if they have 0
 	
 	-- TODO: Add one skill point to their small arms skill
+	-- 200 points total
 	outputChatBox("You increased your shotgun skill!")
 end
 
@@ -127,6 +148,7 @@ function processRifleSkill(button)
 	-- Check their skill points, and cancel the event if they have 0
 	
 	-- TODO: Add one skill point to their small arms skill
+	-- 200 points total
 	outputChatBox("You increased your rifle skill!")
 end
 
