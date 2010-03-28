@@ -21,74 +21,24 @@ function showInventory()
 	-- TODO: Alter this logic to operate on CharacterIDs other than 1
 	inventoryTable = selectSQL("Items INNER JOIN Inventory ON Items.ItemID=Inventory.ItemID", "Items.Name, Items.Description, Inventory.Quantity", "Inventory.CharacterID='1'")
 	
-	for key, value in ipairs(inventoryTable) do
-		outputDebugString(value.Name .. " (" .. value.Quantity .. "): " .. value.Description)
-	end
-	
 	triggerClientEvent("createInventory", getRootElement(), inventoryTable)
-	
-	--[[if sqlResult then
-		local inventoryWindow = guiCreateWindow ( 0.15, 0.15, 0.7, 0.3, "Inventory", true )
-		local itemList = guiCreateGridList (0.1, 0.25, 0.35, 0.6, true, inventoryWindow) -- Create the grid list
-	    local itemCol = guiGridListAddColumn( itemList, "Quantity", 0.2 ) -- Create a 'players' column in the list
-	    local nameCol = guiGridListAddColumn( itemList, "Name", 0.3 ) -- Create a 'players' column in the list
-	    local descCol = guiGridListAddColumn( itemList, "Description", 0.5 ) -- Create a 'players' column in the list
-	    
-		while true do
-		    local inventoryItem = mysql_fetch_assoc(sqlResult)
-		    if (not inventoryItem) then break end
-		 
-		    --outputDebugString(inventoryItem["Name"])
-		    --outputDebugString(inventoryItem["Description"])
-			
-	        local row = guiGridListAddRow (itemList)
-	        guiGridListSetItemText(itemList, row, itemCol, inventoryItem.Quantity, false, true)	
-	        guiGridListSetItemText(itemList, row, nameCol, inventoryItem.Name, false, false)
-	        guiGridListSetItemText(itemList, row, descCol, inventoryItem.Description, false, false)
-		end
-		
-		guiSetVisible ( inventoryWindow, true )
-
-		mysql_free_result(sqlResult) -- Freeing the result is IMPORTANT
-	else		
-		outputSQLError()
-	end]]--	
 end
 addCommandHandler("inventory", showInventory)
 
 function listAllItems()	
-	local sqlResult = mysql_query(mysqlConnection, "SELECT ItemID, Name, Description FROM Items;")
-	if sqlResult then
-		local itemWindow = guiCreateWindow ( 0.15, 0.15, 0.7, 0.3, "Item Browser", true )
-		local itemList = guiCreateGridList (0.1, 0.25, 0.35, 0.6, true, itemWindow) -- Create the grid list
-	    local itemCol = guiGridListAddColumn( itemList, "ItemID", 0.2 ) -- Create a 'players' column in the list
-	    local nameCol = guiGridListAddColumn( itemList, "Name", 0.3 ) -- Create a 'players' column in the list
-	    local descCol = guiGridListAddColumn( itemList, "Description", 0.5 ) -- Create a 'players' column in the list
-	    
-		while true do
-		    local inventoryItem = mysql_fetch_assoc(sqlResult)
-		    if (not inventoryItem) then break end
-		 			
-	        local row = guiGridListAddRow (itemList)
-	        guiGridListSetItemText(itemList, row, itemCol, inventoryItem.ItemID, false, true)	
-	        guiGridListSetItemText(itemList, row, nameCol, inventoryItem.Name, false, false)
-	        guiGridListSetItemText(itemList, row, descCol, inventoryItem.Description, false, false)
-		end
-		
-		guiSetVisible ( itemWindow, true )
-
-		mysql_free_result(sqlResult) -- Freeing the result is IMPORTANT
-	else		
-		outputSQLError()
-	end	
+	-- TODO: Verify admin level before showing all items	
+	itemTable = selectSQL("Items", "ItemID, Name, Description", "1")
+	
+	triggerClientEvent("createItemBrowser", getRootElement(), itemTable)
 end
-addCommandHandler("listitems", listAllItems)
+addCommandHandler("items", listAllItems)
 
 -- This function checks the Players table to see if the player has previously registered an account
-function checkSQLAccountExists(thePlayer)
-	local accountTable = selectSQL("Players", "PlayerID", "PlayerName='" .. getPlayerName(thePlayer) .. "';")
-	if accountTable ~= nil then 
+function checkSQLAccountExists(playerName)
+	local accountTable = selectSQL("Players", "PlayerID", "PlayerName='" .. playerName .. "'")
+	if #accountTable ~= 0 then 
 		-- Account exists
+		setElementData(getPlayerFromName(playerName), "PlayerID", accountTable[1].PlayerID)
 		return true
 	else 
 		-- Something went wrong
@@ -101,8 +51,9 @@ end
 function attemptLogin(playerName, password)	
 	local playerTable = selectSQL("Players", "PlayerID", "PlayerName='" .. playerName .. [[' AND Password=AES_ENCRYPT(']] .. password .. [[', 'Js.TK:?8Lm"HQr69DzbEyvfMRY&a?OrX')]])
 	
-	if playerTable ~= nil then 
-		setElementData(getPlayerFromName(playerName), "PlayerID", playerTable[1]["PlayerID"])
+	-- Is the length of the player table something other than zero?
+	if #playerTable ~= 0 then 
+		-- Successful login		
 		return true
 	else
 		-- Something went wrong
@@ -110,23 +61,33 @@ function attemptLogin(playerName, password)
 	end	
 end
 
-function addSQLAccount(playerName, password)
-	local sqlResult = mysql_query(mysqlConnection, "INSERT INTO Players (PlayerName, Password) VALUES('" .. playerName .. [[', AES_ENCRYPT(']] .. password .. [[', 'Js.TK:?8Lm"HQr69DzbEyvfMRY&a?OrX'));]])
-	if sqlResult then
-		mysql_free_result(sqlResult) -- Freeing the result is IMPORTANT
-		
+function addSQLAccount(playerName, password)	
+	local createdAccount = insertSQL("Players", "PlayerName, Password", "'" .. playerName .. [[', AES_ENCRYPT(']] .. password .. [[', 'Js.TK:?8Lm"HQr69DzbEyvfMRY&a?OrX')]])
+	if createdAccount then
+		checkSQLAccountExists(playerName)
 		return true
-	else
-		outputSQLError()		
 	end
 	
 	-- Something went wrong
 	return false
 end
 
--- insertSQL("Players", "PlayerName, Password", "'" .. playerName .. "', AES_ENCRYPT('" .. password .. [[', 'Js.TK:?8Lm"HQr69DzbEyvfMRY&a?OrX'));]])
+function getAllCharacterInfo(playerName)	
+	-- Create a table to store basic information about each character	
+	charactersInfo = {}
+	
+	local playerID = getElementData(getPlayerFromName(playerName), "PlayerID")
+	if playerID ~= nil and playerID ~= false then
+		charactersInfo = selectSQL("Characters", "*", "PlayerID='" .. playerID .. "'")
+	end
+	
+	-- Return the character details
+	return charactersInfo
+end
+
+-- Helper function to insert values in to SQL
 function insertSQL(tableName, columns, values)
-	local sqlResult = mysql_query(mysqlConnection, "INSERT INTO " .. tableName " (" .. columns .. ") VALUES(" .. values .. ");")
+	local sqlResult = mysql_query(mysqlConnection, "INSERT INTO " .. tableName .. " (" .. columns .. ") VALUES(" .. values .. ");")
 	if sqlResult then
 		mysql_free_result(sqlResult) -- Freeing the result is IMPORTANT
 		
@@ -139,11 +100,17 @@ function insertSQL(tableName, columns, values)
 	return false
 end
 
+-- Helper function to retrieve values from SQL
 function selectSQL(tableName, columns, predicate)
 	-- Create a table to store basic information about each character	
 	selectResult = {}
 
 	local query = "SELECT " .. columns .. " FROM " .. tableName .. " WHERE " .. predicate .. ";"
+	
+	-- DEBUG --
+	outputDebugString(query)
+	-----------
+	
 	local sqlResult = mysql_query(mysqlConnection, query)
 	
 	if sqlResult then
@@ -152,6 +119,12 @@ function selectSQL(tableName, columns, predicate)
 			    local row = mysql_fetch_assoc(sqlResult)
 			    if (not row) then break end
 			 
+			 	-- DEBUG --
+			 	for key, value in pairs(row) do
+			 		outputDebugString(key .. ": " .. value)
+			 	end
+			 	-----------
+			 	
 			    table.insert(selectResult, row)
 			end				
 		end
@@ -163,15 +136,4 @@ function selectSQL(tableName, columns, predicate)
 	
 	-- Return the character details
 	return selectResult
-end
-
-		
-function getAllCharacterInfo(playerName)	
-	-- Create a table to store basic information about each character	
-	charactersInfo = {}
-	
-	charactersInfo = selectSQL("Characters", "*", "PlayerID='" .. getElementData(getPlayerFromName(playerName), "PlayerID") .. "'")
-	
-	-- Return the character details
-	return charactersInfo
 end

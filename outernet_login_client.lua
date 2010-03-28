@@ -49,7 +49,7 @@ addEventHandler("onClientResourceStart", getResourceRootElement(getThisResource(
 		CreateLoginWindow()
 		
 		-- Hide the chat
-	 	showChat(true)
+	 	showChat(false)
 	 
 		lblDisplayArea = guiCreateLabel(0.100,0.800,0.800,0.100,"",true)
 		guiLabelSetHorizontalAlign(lblDisplayArea,"center",true)
@@ -66,9 +66,10 @@ function clientNewUserHandler() --Called when no account exists for this players
 	clientDisplayAreaHandler("No account exists for your username. Please create a password for your new account.", 1)
 
 	if (wdwLogin) then
-		guiSetVisible(wdwLogin,true)
-		guiBringToFront(edtPass) --Puts the cursor into the password box for typing...
 		guiSetText(btnLogin, "Register")
+		
+		guiSetVisible(wdwLogin,true)
+		guiBringToFront(edtPass) --Puts the cursor into the password box for typing...		
 		showCursor(true)
 		guiSetInputEnabled(true)
 	end	
@@ -81,9 +82,10 @@ function clientReturningUserHandler() --Called when there is an existing account
 	clientDisplayAreaHandler("You are using a registered account. Please enter your password now.", 0)
 
 	if (wdwLogin) then
-		guiSetVisible(wdwLogin,true)
-		guiBringToFront(edtPass) --Puts the cursor into the password box for typing...
 		guiSetText(btnLogin, "Login")
+		
+		guiSetVisible(wdwLogin,true)
+		guiBringToFront(edtPass) --Puts the cursor into the password box for typing...		
 		showCursor(true)
 		guiSetInputEnabled(true)
 	end
@@ -149,15 +151,9 @@ function clientLoginSuccessHandler()
 	showCursor(false)
 	guiSetVisible(wdwLogin,false)
 	guiSetVisible(lblDisplayArea,false)
-	--destroyElement(wdwLogin)
-	--destroyElement(lblDisplayArea)
-	wdwLogin = nil
-	newUser = nil
-	lblDisplayArea = nil
-	passwordAttempts = nil
-	localPlayer = nil
-	localPlayerName = nil
-	localRootElement = nil	
+	
+	-- Show the chat
+	showChat(true)
 end
 addEvent("clientLoginSuccess",true)
 addEventHandler("clientLoginSuccess",localRootElement,clientLoginSuccessHandler)

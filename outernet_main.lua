@@ -66,44 +66,46 @@ end
 addEventHandler("onPlayerJoin", getRootElement(), onPlayerJoin)
 
 function setupCharacterCreation(player)
+	outputChatBox("Creating new character.", player)
 	return
 end
 
 function setupCharacterSelection(player)
+	-- Fade in
+	fadeCamera(player, true, 5)
+	
 	-- Load all the characters from the account
 	local characterInfo = getAllCharacterInfo(getPlayerName(player))
 	
 	-- If they do not have any characters registered to this account, send them to character creation
-	if ( type( characterInfo ) == "table" and #characterInfo == 0 ) or not characterInfo then setupCharacterCreation(player) return end
+	--if ( type( characterInfo ) == "table" and #characterInfo == 0 ) or not characterInfo then setupCharacterCreation(player) return end
+	if #characterInfo == 0 then setupCharacterCreation(player) return end
 	
-	for index,character in ipairs(characterInfo) do
-		outputDebugString("Name: " .. character.Name .. "(" .. character.CharacterID .. ")")
-		outputDebugString("Biography: " .. character.Biography)
-		
+	for index, character in ipairs(characterInfo) do	
 		-- Create an NPC for each
-		
+		local characterPed = createPed(character.Skin, 160.984863 + index * 3, 1213.388305, 21.501449)
+		setPedRotation(characterPed, 221.263046)
 	end
 	
 	-- Bind keys for switching between characters
-	
-	-- Fade in
-	fadeCamera(player, true, 5)
-	
+	--bindKey("arrow_l", "down", previousCharacter)
+    --bindKey("arrow_r", "down", nextCharacter)
+    
 	-- Freeze them in place
 	--toggleAllControls(player, false, false) 
 	
 	-- Set the player up in front of the Fort Carson sign
-	spawnPlayer(player, 163.984863, 1213.388305, 21.501449)	
-	setPedRotation(player, 221.263046)
+	--spawnPlayer(player, 163.984863, 1213.388305, 21.501449)	
+	--setPedRotation(player, 221.263046)
 	
 	-- Make the player do the smoking animation
 	setPedAnimation(player, "SMOKING", "M_smklean_loop", 10, true)
 	
 	-- TODO: Put the player in another dimension so they can't be harmed
 	
-	setCameraTarget(source, source)
+	setCameraTarget(player, player)
 	-- Set up the camera
-	--setCameraMatrix(player, 169, 1201, 25, 170, 1225, 20)
+	setCameraMatrix(player, 169, 1201, 25, 170, 1225, 20)
 end
 
 function openItemBrowser()
@@ -112,12 +114,6 @@ function openItemBrowser()
 	triggerClientEvent("createItemBrowser",getRootElement(), allItems)
 end
 addCommandHandler("items", openItemBrowser)
-
-function spawnCharacter(characterID)
-	-- Focus the camera on the player
-	setCameraTarget(source, source)
-end
-addCommandHandler("spawn", spawnCharacter)
 
 -- This callback is activated everytime a player is killed
 function onPlayerWasted ( ammo, attacker, weapon, bodypart )
