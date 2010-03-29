@@ -1090,10 +1090,9 @@
     <object id="object (missile_11_SFXR) (1)" model="3797" interior="0" dimension="0" posX="-343.15338134766" posY="1544.5212402344" posZ="77.247047424316" rotX="0" rotY="0" rotZ="0" />
     <object id="object (Plant_Pot_5) (1)" model="2241" interior="0" dimension="0" posX="-346.60403442383" posY="1540.5844726563" posZ="75.066299438477" rotX="0" rotY="0" rotZ="0" />
     <vehicle id="vehicle (FBI Rancher) (2)" paintjob="3" model="490" plate="B7GJD0Y" interior="0" dimension="0" color="36,0,0,0" posX="-327.3740234375" posY="1513.8662109375" posZ="75.404487609863" rotX="0" rotY="0" rotZ="0" upgrades="1010,1025" />
-    <vehicle id="vehicle (FBI Rancher) (5)" paintjob="3" model="490" plate="06R9WN6" interior="0" dimension="0" color="36,0,0,0" posX="-336.5651550293" posY="1513.5771484375" posZ="75.404487609863" rotX="0" rotY="0" rotZ="0" upgrades="1010,1025" />
-    <vehicle id="vehicle (FBI Rancher) (6)" paintjob="3" model="490" plate="205KV8D" interior="0" dimension="0" color="36,0,0,0" posX="-342.611328125" posY="1514.1450195313" posZ="75.404487609863" rotX="0" rotY="0" rotZ="0" upgrades="1010,1025" />
-    <vehicle id="vehicle (HPV1000) (1)" paintjob="3" model="523" plate="NCC6KV7" interior="0" dimension="0" posX="-333.49331665039" posY="1516.2569580078" posZ="74.944793701172" rotX="0" rotY="0" rotZ="0" />
-    <vehicle id="vehicle (HPV1000) (2)" paintjob="3" model="523" plate="10H1GGO" interior="0" dimension="0" posX="-330.74349975586" posY="1516.2998046875" posZ="74.944793701172" rotX="0" rotY="0" rotZ="0" />
+    <vehicle id="vehicle (FBI Rancher) (5)" paintjob="3" model="490" plate="06R9WN6" interior="0" dimension="0" color="36,0,0,0" posX="-336.564453125" posY="1513.5771484375" posZ="75.404487609863" rotX="0" rotY="0" rotZ="0" upgrades="1010,1025" />
+    <vehicle id="vehicle (FBI Rancher) (6)" paintjob="3" model="490" plate="205KV8D" interior="0" dimension="0" color="36,0,0,0" posX="-342.611328125" posY="1514.14453125" posZ="75.404487609863" rotX="0" rotY="0" rotZ="0" upgrades="1010,1025" />
+    <vehicle id="vehicle (HPV1000) (2)" paintjob="3" model="523" plate="10H1GGO" interior="0" dimension="0" posX="-333.11227416992" posY="1516.1899414063" posZ="74.944793701172" rotX="0" rotY="0" rotZ="0" />
     <vehicle id="vehicle (Police LV) (1)" paintjob="3" model="598" plate="HWV4BWU" interior="0" dimension="0" posX="-321.0751953125" posY="1515.6015625" posZ="75.054428100586" rotX="0" rotY="0" rotZ="0" />
     <object id="object (a51_sdsk_1_) (1)" model="3397" interior="0" dimension="0" posX="-275.55377197266" posY="1516.00390625" posZ="76.068473815918" rotX="0" rotY="0" rotZ="312.3603515625" />
     <object id="object (swivelchair_A) (4)" model="1671" interior="0" dimension="0" posX="-275.38006591797" posY="1517.6248779297" posZ="76.525871276855" rotX="0" rotY="0" rotZ="0" />
@@ -1225,8 +1224,7 @@
     <object id="object (a51_srack2_) (1)" model="3386" interior="0" dimension="0" posX="-345.52893066406" posY="1535.4599609375" posZ="74.5625" rotX="0" rotY="0" rotZ="1.9849853515625" />
     <object id="object (missile_11_SFXR) (1)" model="3797" interior="0" dimension="0" posX="-343.15338134766" posY="1544.5212402344" posZ="77.247047424316" rotX="0" rotY="0" rotZ="0" />
     <object id="object (Plant_Pot_5) (1)" model="2241" interior="0" dimension="0" posX="-346.60403442383" posY="1540.5844726563" posZ="75.066299438477" rotX="0" rotY="0" rotZ="0" />
-    <vehicle id="vehicle (FBI Rancher) (6)" paintjob="3" model="490" plate="205KV8D" interior="0" dimension="0" color="36,0,0,0" posX="-342.611328125" posY="1514.1450195313" posZ="75.404487609863" rotX="0" rotY="0" rotZ="0" upgrades="1010,1025" />
-    <vehicle id="vehicle (HPV1000) (2)" paintjob="3" model="523" plate="10H1GGO" interior="0" dimension="0" posX="-330.74349975586" posY="1516.2998046875" posZ="74.944793701172" rotX="0" rotY="0" rotZ="0" />
+    <vehicle id="vehicle (HPV1000) (2)" paintjob="3" model="523" plate="10H1GGO" interior="0" dimension="0" posX="-330.7431640625" posY="1516.2998046875" posZ="74.944793701172" rotX="0" rotY="0" rotZ="0" />
     <object id="object (a51_sdsk_1_) (1)" model="3397" interior="0" dimension="0" posX="-275.55377197266" posY="1516.00390625" posZ="76.068473815918" rotX="0" rotY="0" rotZ="312.3603515625" />
     <object id="object (swivelchair_A) (4)" model="1671" interior="0" dimension="0" posX="-275.38006591797" posY="1517.6248779297" posZ="76.525871276855" rotX="0" rotY="0" rotZ="0" />
     <object id="object (helipad01) (1)" model="3934" interior="0" dimension="0" posX="-296.44323730469" posY="1560.7921142578" posZ="74.409454345703" rotX="0" rotY="0" rotZ="43.669799804688" />
