@@ -1,15 +1,17 @@
 <meta>
 	<info author="The Outernet Team" version="0.1" type="gamemode" edf:definition="outernet_map.edf" name="Outernet Wasteland Apocalypse Roleplay" description="A completely custom roleplay script set in a post apocalypse world." />	
 
-	<script src="eqMinigun.lua" />
-
+	
+	<script src="outernet_constants.lua" />
 	<script src="outernet_main.lua" />
 	<script src="outernet_vehicles.lua" />
 	<script src="outernet_sql.lua" />
-	<script src="outernet_login_server.lua" />
+	<script src="outernet_login_server.lua" />	
 
 	<script src="outernet_gui.lua" type="client" />
 	<script src="outernet_login_client.lua" type="client" />
+
+	<script src="eqMinigun.lua" />
 
 	<map src="outernet_details.map" dimension="0" />
 
