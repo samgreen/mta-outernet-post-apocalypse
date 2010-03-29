@@ -1,7 +1,7 @@
 local mysqlConnection
 
 function setupSQL()
-	mysqlConnection = mysql_connect("localhost", "mtaserver", "808kedavra9;o", "Outernet_MTA", 3306, "/var/run/mysqld/mysqld.sock")
+	mysqlConnection = mysql_connect(SQL_HOSTNAME, SQL_USERNAME, SQL_PASSWORD, SQL_DATABASE, 3306, SQL_SOCKET)
 	if mysqlConnection == nil then outputDebugString("Failed to connect to SQL server!") return false end
 	
 	return true
@@ -49,7 +49,7 @@ end
 -- This function encrypts the password sent from the login GUI and tests it against the stored encrypted password in the database
 -- Returns true for matching username and password, false otherwise
 function attemptLogin(playerName, password)	
-	local playerTable = selectSQL("Players", "PlayerID", "PlayerName='" .. playerName .. [[' AND Password=AES_ENCRYPT(']] .. password .. [[', 'Js.TK:?8Lm"HQr69DzbEyvfMRY&a?OrX')]])
+	local playerTable = selectSQL("Players", "PlayerID", "PlayerName='" .. playerName .. [[' AND Password=AES_ENCRYPT(']] .. password .. "', '" .. AES_PASSKEY .. "')")
 	
 	-- Is the length of the player table something other than zero?
 	if #playerTable ~= 0 then 
@@ -62,7 +62,7 @@ function attemptLogin(playerName, password)
 end
 
 function addSQLAccount(playerName, password)	
-	local createdAccount = insertSQL("Players", "PlayerName, Password", "'" .. playerName .. [[', AES_ENCRYPT(']] .. password .. [[', 'Js.TK:?8Lm"HQr69DzbEyvfMRY&a?OrX')]])
+	local createdAccount = insertSQL("Players", "PlayerName, Password", "'" .. playerName .. [[', AES_ENCRYPT(']] .. password .. "', '" .. AES_PASSKEY .. "')")
 	if createdAccount then
 		checkSQLAccountExists(playerName)
 		return true
