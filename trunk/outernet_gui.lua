@@ -7,12 +7,33 @@ local buttonSpecialtySkill
 local buttonShotgunSkill
 local buttonRifleSkill
 
+local mapVisible = false
+local mapImage = nil
+
+function toggleMap()
+	mapVisible = not mapVisible
+	if mapVisible then 
+		guiSetVisible(mapImage, false)
+	else 
+		guiSetVisible(mapImage, true)	
+	end	
+end
+
 -- This event is triggered when this file has completed downloading.
 addEventHandler("onClientResourceStart", getResourceRootElement(getThisResource()), 
 	function ()
 		-- create the gun skills
-		createGunSkillsWindow()
+		--createGunSkillsWindow()
+		
+		-- Fix camera clip issues
+		setCameraClip(false, false)
  
+ 		-- Bind a key for the map
+ 		bindKey("m", "down", toggleMap)
+ 		
+ 		-- Create the static map image
+ 		mapImage = guiCreateStaticImage(10, 10, 864, 864, "images/map.png", false)
+
 		-- enable the players cursor (so they can select and click on the components)
 	    -- showCursor(true)
 		-- set the input focus onto the GUI, allowing players (for example) to press 'T' without the chatbox opening
