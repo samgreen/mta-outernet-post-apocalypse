@@ -1,13 +1,29 @@
-local teamRaiders, teamSurvivors, teamInfected
-
--- Create colshapes
-local raiderGateColRectangle = createColRectangle ( -1290, 2434, 15, 25 )
+-- Define resourceRoot as a shortcut
+local resourceRoot = getResourceRootElement(getThisResource())
+-- Define teams
+local teams = {}
 
 -- This callback is activated once, when the resource is started.
-function onResourceStart()
-	teamRaiders   = createTeam("Raiders", 200, 10, 10)
-	teamSurvivors = createTeam("Survivors", 10, 10, 200)
-	teamInfected = createTeam("Infected", 10, 10, 10)
+function onOuternetStart()
+	-- Initialize the teams
+	teams.Raiders   = createTeam("Raiders", 200, 10, 10)
+	teams.Survivors = createTeam("Survivors", 10, 10, 200)
+	teams.Infected = createTeam("Infected", 10, 10, 10)
+	
+	-- Add all of our spawn points to the spawnmanager resource
+	-- Retrieve a table with all the spawnpoint elements
+	local spawnPoints = getElementsByType("spawnpoint")
+	-- loop through them
+	for key, spawnPoint in pairs(spawnPoints) do
+		-- get our info
+		local posX = getElementData(spawnPoint, "posX")
+		local posY = getElementData(spawnPoint, "posY")
+		local posZ = getElementData(spawnPoint, "posZ")
+		local rotZ = getElementData(spawnPoint, "rotZ")
+		
+		-- Add the info to our spawn manager
+		call(getResourceFromName("spawnmanager"), "createSpawnpoint", posX, posY, posZ, rotZ)
+	end
 	
 	-- Setup our vehicles
 	initVehicleSystem()
@@ -16,107 +32,32 @@ function onResourceStart()
 	-- DEBUG: Commented out to speed debugging
 	-- logoutAllPlayers()
 	
-	-- Connect to SQL
+	-- Finally, connect to SQL
 	setupSQL()
 end
-addEventHandler("onResourceStart", getResourceRootElement(getThisResource()), onResourceStart)
+addEventHandler("onResourceStart", resourceRoot, onOuternetStart)
 
 -- This callback is activated once, when the resource is stopping.
-function onResourceStop()	
+function onOuternetStop()	
 	-- Cleanup our SQL connection and resources
 	shutdownSQL()
 end
-addEventHandler("onResourceStop", getResourceRootElement(getThisResource()), onResourceStop)
-
--- This function logs out all non-guest players.
-function logoutAllPlayers()
-	local players = getElementsByType ("player")
-	for k, player in ipairs ( players ) do
-		account = getPlayerAccount(player)
-		if (not isGuestAccount(account)) then
-			logOut(player)
-		end
-	end
-end
+addEventHandler("onResourceStop", resourceRoot, onOuternetStop)
 
 -- This callback is activated every time a player joins the server.
 function onPlayerJoin()
-	-- retrieve a table with all flag elements
-	local spawnPoints = getElementsByType ( "spawnpoint" )
-	-- loop through them
-	for key, value in pairs(spawnPoints) do
-		-- get our info
-		local posX = getElementData ( value, "posX" )
-		local posY = getElementData ( value, "posY" )
-		local posZ = getElementData ( value, "posZ" )
-		local rotZ = getElementData ( value, "rotZ" )
-		
-		-- Add the info to our spawn manager
-		local theSpawnpoint = call(getResourceFromName("spawnmanager"), "createSpawnpoint", posX, posY, posZ, rotZ)
-	end
-
 	-- Spawn the player	
-	--call(getResourceFromName("spawnmanager"), "spawnPlayerAtSpawnpoint", source, theSpawnpoint)		
+	call(getResourceFromName("spawnmanager"), "spawnPlayerAtSpawnpoint", source)		
 	
-	setupCharacterSelection(source)
+	--setupCharacterSelection(source)
 	
 	-- Send welcome message
 	outputChatBox("Welcome to the wasteland apocalypse of Outernet MTA!", source)
 end
 addEventHandler("onPlayerJoin", getRootElement(), onPlayerJoin)
 
-function setupCharacterCreation(player)
-	outputChatBox("Creating new character.", player)
-	return
-end
-
-function setupCharacterSelection(player)
-	-- Fade in
-	fadeCamera(player, true, 5)
-	
-	-- Load all the characters from the account
-	local characterInfo = getAllCharacterInfo(getPlayerName(player))
-	
-	-- If they do not have any characters registered to this account, send them to character creation
-	--if ( type( characterInfo ) == "table" and #characterInfo == 0 ) or not characterInfo then setupCharacterCreation(player) return end
-	if #characterInfo == 0 then setupCharacterCreation(player) return end
-	
-	for index, character in ipairs(characterInfo) do	
-		-- Create an NPC for each
-		local characterPed = createPed(character.Skin, 160.984863 + index * 3, 1213.388305, 21.501449)
-		setPedRotation(characterPed, 221.263046)
-	end
-	
-	-- Bind keys for switching between characters
-	--bindKey("arrow_l", "down", previousCharacter)
-    --bindKey("arrow_r", "down", nextCharacter)
-    
-	-- Freeze them in place
-	--toggleAllControls(player, false, false) 
-	
-	-- Set the player up in front of the Fort Carson sign
-	--spawnPlayer(player, 163.984863, 1213.388305, 21.501449)	
-	--setPedRotation(player, 221.263046)
-	
-	-- Make the player do the smoking animation
-	setPedAnimation(player, "SMOKING", "M_smklean_loop", 10, true)
-	
-	-- TODO: Put the player in another dimension so they can't be harmed
-	
-	setCameraTarget(player, player)
-	-- Set up the camera
-	setCameraMatrix(player, 169, 1201, 25, 170, 1225, 20)
-end
-
-function openItemBrowser()
-	local allItems = selectSQL("Items", "*", "1")
-	
-	triggerClientEvent("createItemBrowser",getRootElement(), allItems)
-end
-addCommandHandler("items", openItemBrowser)
-
 -- This callback is activated everytime a player is killed
-function onPlayerWasted ( ammo, attacker, weapon, bodypart )
+function onPlayerWasted(ammo, attacker, weapon, bodypart)
 	fadeCamera(source, false, 4.5)
 	
 	-- If an infected player died, reset their team
@@ -127,7 +68,7 @@ function onPlayerWasted ( ammo, attacker, weapon, bodypart )
 	-- if there was an attacker
 	if ( attacker ) then
 		-- we declare our variable outside the following checks
-		local tempString
+		local tempString = ""
 		-- if the element that killed him was a player,
 		if ( getElementType ( attacker ) == "player" ) then
 			-- put the attacker, victim and weapon info in the string
@@ -135,7 +76,7 @@ function onPlayerWasted ( ammo, attacker, weapon, bodypart )
 		-- else, if it was a vehicle,
 		elseif ( getElementType ( attacker ) == "vehicle" ) then
 			-- we'll get the name from the attacker vehicle's driver
-			local tempString = getPlayerName ( getVehicleController ( attacker ) ).." killed "..getPlayerName ( source ).." ("..getWeaponNameFromID ( weapon )..")"
+			tempString = getPlayerName ( getVehicleController ( attacker ) ).." killed "..getPlayerName ( source ).." ("..getWeaponNameFromID ( weapon )..")"
 		end
 		-- if the victim was shot in the head, append a special message
 		if ( bodypart == 9 ) then
@@ -161,33 +102,79 @@ function onPlayerWasted ( ammo, attacker, weapon, bodypart )
 
 	setTimer( setupSpawn, 5000, 1, source)	
 end
-addEventHandler ( "onPlayerWasted", getRootElement(), onPlayerWasted )
+addEventHandler("onPlayerWasted", getRootElement(), onPlayerWasted)
+
+function setupCharacterCreation(player)
+	outputChatBox("Creating new character.", player)
+	return
+end
+
+function previousCharacter()
+
+end
+
+function nextCharacter()
+
+end
+
+function setupCharacterSelection(player)
+	-- Fade in
+	fadeCamera(player, true, 5)
+	
+	-- Load all the characters from the account
+	local characterInfo = getAllCharacterInfo(getPlayerName(player))
+	
+	-- If they do not have any characters registered to this account, send them to character creation
+	--if ( type( characterInfo ) == "table" and #characterInfo == 0 ) or not characterInfo then setupCharacterCreation(player) return end
+	if #characterInfo == 0 then setupCharacterCreation(player) return end
+	
+	for index, character in ipairs(characterInfo) do	
+		-- Create an NPC for each
+		local characterPed = createPed(character.Skin, 160.984863 + index * 3, 1213.388305, 21.501449)
+		setPedRotation(characterPed, 221.263046)
+	end
+	
+	-- Bind keys for switching between characters
+	bindKey("arrow_l", "down", previousCharacter)
+    bindKey("arrow_r", "down", nextCharacter)
+    
+    outputChatBox("Use the arrow keys to select your character.", player)
+    
+	-- Set the player up in front of the Fort Carson sign
+	spawnPlayer(player, 163.984863, 1213.388305, 21.501449)	
+	setPedRotation(player, 221.263046)
+	
+	-- Make the player do the smoking animation
+	setPedAnimation(player, "SMOKING", "M_smklean_loop", 10, true)
+	
+	-- TODO: Put the player in another dimension so they can't be harmed
+	
+	setCameraTarget(player, player)
+	-- Set up the camera
+	setCameraMatrix(player, 169, 1201, 25, 170, 1225, 20)
+end
+
+function openItemBrowser()
+	local allItems = selectSQL("Items", "*", "1")
+	
+	triggerClientEvent("createItemBrowser",getRootElement(), allItems)
+end
+addCommandHandler("items", openItemBrowser)
 
 function setupSpawn(player)
 	fadeCamera(player, true)
 	-- TODO: Add logic to determine player spawn location (team, etc)
-	call(getResourceFromName("spawnmanager"), "spawnPlayerAtSpawnpoint", player, theSpawnpoint)
+	call(getResourceFromName("spawnmanager"), "spawnPlayerAtSpawnpoint", player)
 end
 
 function joinraiders (source)
 	setPlayerTeam(source, teamRaiders)
 	
-	local spawnPoints = getElementsByType ( "spawnpoint" )
-	for key, value in pairs(spawnPoints) do
-		-- get our info
-		local posX = getElementData ( value, "posX" )
-		local posY = getElementData ( value, "posY" )
-		local posZ = getElementData ( value, "posZ" )
-		local rotZ = getElementData ( value, "rotZ" )
-		
-		-- Add the info to our spawn manager
-		local theSpawnpoint = call(getResourceFromName("spawnmanager"), "createSpawnpoint", posX, posY, posZ, rotZ) --Create the spawnpoint.
-		call(getResourceFromName("spawnmanager"), "spawnPlayerAtSpawnpoint", source, theSpawnpoint)
-	end
+	call(getResourceFromName("spawnmanager"), "spawnPlayerAtSpawnpoint", source)
 	
 	outputChatBox("You joined the blood thirsty raiders.", source)
 end
-addCommandHandler ( "joinraiders", joinraiders )
+addCommandHandler("joinraiders", joinraiders)
 
 function joinsurvivors(source)
 	setPlayerTeam(source, teamSurvivors)
@@ -241,76 +228,9 @@ end
 function onVehicleStartEnter(thePlayer, seat, jacked, door)
     -- Are they infected?
     if getPlayerTeam(thePlayer) == teamInfected then 
-    	-- Did they try to jack another player?
-    	if jacked ~= false then 
-    		-- Allow it
-			return
-		else
-			-- Otherwise do not allow them to enter the vehicles
-	    	cancelEvent()
-	    	outputChatBox("You can't possibly drive this in your current condition.", thePlayer) 
-		end    	   	
+		-- Otherwise do not allow them to enter the vehicles
+		cancelEvent()
+		outputChatBox("You can't possibly drive this in your current condition.", thePlayer)    	
     end
 end
 addEventHandler("onVehicleStartEnter", getRootElement(), onVehicleStartEnter)
-
--- add raiderGateOpen as a handler for when a player enters the gate colRectangle
-function raiderGateOpen(thePlayer)
-	--if the element that entered was player     
-    if getElementType(thePlayer) == "player" then 
-    		-- Ensure they are on the raiders team before we open the gate
-    		if getPlayerTeam(thePlayer) ~= teamRaiders then 
-    			outputChatBox([[A raider shouts at you, "Can't you read the sign?! I'm reloading, and you're trespassing. I'll give you to the count of one!"]], thePlayer)
-    			return
-    		end
-    		
-	        -- Open the gate
-	        moveObject(getElementByID("gateRaiderHQ"), 3500, -1272.2, 2449.6, 87.1)
-    end
-end
-addEventHandler ( "onColShapeHit", raiderGateColRectangle, raiderGateOpen )
- 
--- add raiderGateClose as a handler for when a player leavesthe gate colRectangle
-function raiderGateClose(thePlayer)
-	--if the element that left was player
-    if getElementType ( thePlayer ) == "player" then 
-    		-- Ensure they are on the raiders team before we close the gate
-    		if getPlayerTeam(thePlayer) ~= teamRaiders then return end
-    		
-			-- Close the gate
-	        moveObject(getElementByID("gateRaiderHQ"), 3500, -1280.4, 2447.1, 87.1)
-    end
-end
-addEventHandler ( "onColShapeLeave", raiderGateColRectangle, raiderGateClose )
-
-local raiderBotElevColRectangle = createColCuboid ( 32, 2183, 28, 3, 5, 15)
-local raiderTopElevColRectangle = createColCuboid ( 31, 2190, 121, 4, 3, 2)
-
-function raiderElevatorDown (thePlayer)	    
-    if getElementType(thePlayer) == "player" then 
-    		if getPlayerTeam(thePlayer) ~= teamRaiders then 
-    			outputChatBox([[A raider shouts at you, "Get the fuck away from my elevator ya son of a bitch!"]], thePlayer)
-    			return
-    		end
-    		
-	        -- Lower Elevator
-	        moveObject(getElementByID ("raiderElevator"), 10000, 33.0712890625, 2189.341796875, 38.440925598145 )
-    end
-    
-    outputDebugString("raiderElevatorDown(thePlayer)")
-end
-addEventHandler ( "onColShapeHit", raiderBotElevColRectangle, raiderElevatorDown )
-addEventHandler ( "onColShapeLeave", raiderTopElevColRectangle, raiderElevatorDown ) 
-
-function raiderElevatorRaise(thePlayer)   
- 	if getElementType ( thePlayer ) == "player" then     		
-    		if getPlayerTeam(thePlayer) ~= teamRaiders then return end
-    		
-			-- Raise Elevator
-	        moveObject(getElementByID ("raiderElevator"), 10000, 33.0712890625, 2189.341796875, 121.19092559814 )
-    end
-    
-    outputDebugString("raiderElevatorRaise(thePlayer)")
-end
-addEventHandler ( "onColShapeLeave", raiderBotElevColRectangle, raiderElevatorRaise )
-addEventHandler ( "onColShapeHit", raiderTopElevColRectangle, raiderElevatorRaise )
